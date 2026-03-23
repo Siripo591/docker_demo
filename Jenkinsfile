@@ -7,7 +7,6 @@ pipeline {
     }
 
     stages {
-
         stage('Clone Repository') {
             steps {
                 git branch: 'main', url: 'https://github.com/Siripo591/docker_demo.git'
@@ -16,31 +15,29 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    docker.build("${DOCKER_IMAGE}:latest")
-                }
+                // Use double quotes to allow Groovy to inject the variable
+                bat "docker build -t %DOCKER_IMAGE%:latest ."
             }
         }
 
         stage('Login to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                script {
+                    withCredentials([usernamePassword(
+                        credentialsId: "${DOCKER_HUB_CREDS}",
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )]) {
+                        // Use printf or similar for better security on Windows
+                        bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin"
+                    }
                 }
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                script {
-                    docker.withRegistry('', 'dockerhub-creds') {
-                        docker.image("${DOCKER_IMAGE}:latest").push()
-                    }
-                }
+                bat "docker push %DOCKER_IMAGE%:latest"
             }
         }
     }
