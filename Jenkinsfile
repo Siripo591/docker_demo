@@ -1,25 +1,32 @@
 pipeline {
     agent any
-    environment {
-        // Define your image name once to avoid typos
-        IMAGE_NAME = "siripo/myapp:v1"
-    }
+
     stages {
+
         stage('Build Docker Image') {
             steps {
-                bat "docker build -t %IMAGE_NAME% ."
+                bat 'docker build -t siripo/myapp:latest .'
             }
         }
-stage('Push to Docker Hub') {
-    steps {
-        // This 'docker-hub-creds' must match the ID you just created in Jenkins
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', 
-                         passwordVariable: 'PASS', 
-                         usernameVariable: 'USER')]) {
-            bat "echo %PASS% | docker login -u %USER% --password-stdin"
-            bat "docker push siripo/myapp:v1"
+
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    bat 'echo %PASS% | docker login -u %USER% --password-stdin'
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                bat 'docker push siripo/myapp:latest'
+            }
         }
     }
-}
+
+    post {
+        failure {
+            echo 'Pipeline failed'
+        }
     }
 }
