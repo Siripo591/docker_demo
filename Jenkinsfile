@@ -9,7 +9,7 @@ pipeline {
 
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/Siripo591/docker_demo.git'
+                git branch: 'main', url: 'https://github.com/Siripo591/docker_demo.git'
             }
         }
 
