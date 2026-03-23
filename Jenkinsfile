@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "akshatha29/app-image"
+        DOCKER_IMAGE = "siripo/myapp"
+        DOCKER_HUB_CREDS = 'dockerhub-creds'
     }
 
     stages {
